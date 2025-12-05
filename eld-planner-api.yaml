@@ -1,0 +1,390 @@
+openapi: 3.0.3
+info:
+  title: ELD Trip Planner API
+  version: 1.0.0
+  description: API documentation for ELD Trip Planner
+paths:
+  /api/healthcheck:
+    get:
+      operationId: health_check
+      description: Basic health check endpoint
+      summary: Health Check
+      tags:
+      - healthcheck
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                Healthy:
+                  value:
+                    status: healthy
+                    service: ELD Trip Planner Backend
+          description: Service health status
+  /api/trip/{trip_id}:
+    get:
+      operationId: trip_retrieve
+      description: |-
+        GET /api/trip/{id}
+
+        Fetch complete trip details.
+      parameters:
+      - in: path
+        name: trip_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - trip
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                NotFound:
+                  value:
+                    error: Trip not found
+                  summary: Not Found
+          description: Trip not found
+  /api/trip/{trip_id}/logs:
+    get:
+      operationId: trip_logs_retrieve
+      description: |-
+        GET /api/trip/{id}/logs
+
+        Returns structured logs for frontend rendering.
+      parameters:
+      - in: path
+        name: trip_id
+        schema:
+          type: integer
+        required: true
+      tags:
+      - trip
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                NotFound:
+                  value:
+                    error: Trip not found
+                  summary: Not Found
+          description: Trip not found
+  /api/trip/plan:
+    post:
+      operationId: trip_plan_create
+      description: |-
+        POST /api/trip/plan
+
+        Process trip input:
+        1. Validate input
+        2. Geocode locations
+        3. Fetch route from OpenRouteService
+        4. Run HOS engine
+        5. Slice into daily logs
+        6. Map grid indices
+        7. Save to database
+        8. Return structured response
+      tags:
+      - trip
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TripInputRequest'
+            examples:
+              TripPlanningRequest:
+                value:
+                  current_location:
+                    lat: 40.7128
+                    lng: -74.006
+                  pickup_location:
+                    lat: 40.758
+                    lng: -73.9855
+                  dropoff_location:
+                    lat: 34.0522
+                    lng: -118.2437
+                  current_cycle_used_hours: 0.0
+                summary: Trip Planning Request
+        required: true
+      security:
+      - cookieAuth: []
+      - basicAuth: []
+      - {}
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TripResponse'
+              examples:
+                TripPlanningResponse:
+                  value:
+                    tripId: 1
+                    route:
+                      polyline: encoded_polyline_string
+                      distanceMiles: 1430.2
+                      durationHours: 27.5
+                      segments: []
+                    logs:
+                    - date: '2025-10-14'
+                      segments:
+                      - startTime: '2025-10-14T06:00:00Z'
+                        endTime: '2025-10-14T10:30:00Z'
+                        startIndex: 24
+                        endIndex: 42
+                        rowIndex: 2
+                        status: DRIVING
+                        location: Route Segment
+                        remarks: Route segment
+                      totals:
+                        drivingHours: 6.5
+                        onDutyHours: 7.75
+                    stops:
+                    - type: BREAK
+                      time: '2025-10-14T10:30:00Z'
+                      location: Rest Stop
+                      remarks: 30-minute break
+                    meta:
+                      totalDays: 3
+                      totalDistanceMiles: 1430.2
+                  summary: Trip Planning Response
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                ValidationError:
+                  value:
+                    current_location:
+                    - This field is required.
+                    pickup_location:
+                    - This field is required.
+                  summary: Validation Error
+          description: Validation error
+        '500':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+              examples:
+                ServerError:
+                  value:
+                    error: 'Routing failed: API key not configured'
+                  summary: Server Error
+          description: Server error
+components:
+  schemas:
+    DailyLog:
+      type: object
+      description: Serializer for daily log sheets.
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of the log sheet (YYYY-MM-DD)
+        segments:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyLogSegment'
+          readOnly: true
+        driving_hours:
+          type: number
+          format: double
+          description: Total driving hours for this day
+        on_duty_hours:
+          type: number
+          format: double
+          description: Total on-duty hours for this day
+      required:
+      - date
+      - segments
+    DailyLogSegment:
+      type: object
+      description: Serializer for daily log segments.
+      properties:
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        startIndex:
+          type: integer
+        endIndex:
+          type: integer
+        rowIndex:
+          type: integer
+        status:
+          type: string
+        location:
+          type: string
+        remarks:
+          type: string
+      required:
+      - endIndex
+      - endTime
+      - location
+      - remarks
+      - rowIndex
+      - startIndex
+      - startTime
+      - status
+    Route:
+      type: object
+      description: Serializer for route data.
+      properties:
+        polyline:
+          type: string
+          description: Encoded polyline string
+        distance_miles:
+          type: number
+          format: double
+          description: Total distance in miles
+        duration_hours:
+          type: number
+          format: double
+          description: Total driving duration in hours
+        segments:
+          description: Route segments with geometry and instructions
+      required:
+      - distance_miles
+      - duration_hours
+      - polyline
+    Stop:
+      type: object
+      description: Serializer for stops.
+      properties:
+        stop_type:
+          $ref: '#/components/schemas/StopTypeEnum'
+        time:
+          type: string
+          format: date-time
+        location:
+          type: string
+          maxLength: 255
+        remarks:
+          type: string
+      required:
+      - stop_type
+      - time
+    StopTypeEnum:
+      enum:
+      - BREAK
+      - FUEL
+      - REST
+      - PICKUP
+      - DROPOFF
+      type: string
+      description: |-
+        * `BREAK` - Break
+        * `FUEL` - Fuel Stop
+        * `REST` - Rest Stop
+        * `PICKUP` - Pickup
+        * `DROPOFF` - Dropoff
+    TripInputRequest:
+      type: object
+      description: Serializer for trip planning input.
+      properties:
+        current_location:
+          type: object
+          additionalProperties: {}
+          description: 'Current location as {''lat'': float, ''lng'': float} or address
+            string'
+        pickup_location:
+          type: object
+          additionalProperties: {}
+          description: 'Pickup location as {''lat'': float, ''lng'': float} or address
+            string'
+        dropoff_location:
+          type: object
+          additionalProperties: {}
+          description: 'Dropoff location as {''lat'': float, ''lng'': float} or address
+            string'
+        current_cycle_used_hours:
+          type: number
+          format: double
+          maximum: 70.0
+          minimum: 0.0
+          description: Hours already used in current 70-hour cycle
+      required:
+      - current_cycle_used_hours
+      - current_location
+      - dropoff_location
+      - pickup_location
+    TripResponse:
+      type: object
+      description: Serializer for complete trip response.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        route:
+          allOf:
+          - $ref: '#/components/schemas/Route'
+          readOnly: true
+        logs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DailyLog'
+          readOnly: true
+        stops:
+          type: array
+          items:
+            $ref: '#/components/schemas/Stop'
+          readOnly: true
+      required:
+      - id
+      - logs
+      - route
+      - stops
+  securitySchemes:
+    Token:
+      type: apiKey
+      in: header
+      name: Authorization
+    basicAuth:
+      type: http
+      scheme: basic
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: sessionid
