@@ -1,4 +1,4 @@
-import type { Variants } from 'framer-motion'
+import type { Variants, Transition } from 'framer-motion'
 
 export const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 20 },
@@ -36,12 +36,12 @@ export const staggerContainer: Variants = {
   },
 }
 
-export const defaultTransition = {
+export const defaultTransition: Transition = {
   duration: 0.4,
-  ease: [0.4, 0, 0.2, 1],
+  ease: [0.4, 0, 0.2, 1] as [number, number, number, number],
 }
 
-export const springTransition = {
+export const springTransition: Transition = {
   type: 'spring',
   stiffness: 300,
   damping: 30,

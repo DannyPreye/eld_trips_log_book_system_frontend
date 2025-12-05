@@ -9,10 +9,12 @@
  * * `PICKUP` - Pickup
  * * `DROPOFF` - Dropoff
  */
-export enum StopTypeEnum {
-    BREAK = 'BREAK',
-    FUEL = 'FUEL',
-    REST = 'REST',
-    PICKUP = 'PICKUP',
-    DROPOFF = 'DROPOFF',
-}
+export const StopTypeEnum = {
+    BREAK: 'BREAK',
+    FUEL: 'FUEL',
+    REST: 'REST',
+    PICKUP: 'PICKUP',
+    DROPOFF: 'DROPOFF',
+} as const;
+
+export type StopTypeEnum = (typeof StopTypeEnum)[ keyof typeof StopTypeEnum ];

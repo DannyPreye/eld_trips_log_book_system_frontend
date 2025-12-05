@@ -10,7 +10,6 @@ import LogsPreview from "@/components/LogsPreview/LogsPreview";
 import { Button } from "@/components/ui/button";
 import { useTripDetails } from "@/hooks/useTripDetails";
 import { ArrowLeft } from "lucide-react";
-import { getTripId } from "@/lib/tripHelpers";
 
 export default function TripDetails() {
     const { id } = useParams<{ id: string }>();
@@ -42,8 +41,6 @@ export default function TripDetails() {
         );
     }
 
-    const actualTripId = getTripId(trip);
-
     // Extract locations from route polyline or stops
     const pickupStop = trip.stops?.find((s) => s.stop_type === "PICKUP");
     const dropoffStop = trip.stops?.find((s) => s.stop_type === "DROPOFF");
@@ -63,8 +60,6 @@ export default function TripDetails() {
 
     // Check if meta data exists
     const meta = (trip as any).meta;
-
-    console.log(trip);
 
     return (
         <div className='min-h-screen bg-background overflow-x-hidden'>
