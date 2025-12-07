@@ -451,63 +451,67 @@ export default function LogGraph({
                                 {normalizedSegments
                                     .sort((a, b) => a.startIndex - b.startIndex)
                                     .map((segment, idx) => {
-                                    const startTime = new Date(
-                                        segment.startTime
-                                    );
-                                    const endTime = new Date(segment.endTime);
-                                    const duration =
-                                        (segment.endIndex -
-                                            segment.startIndex) /
-                                        SLOTS_PER_HOUR;
-
-                                    const formatTime = (date: Date): string => {
-                                        return date.toLocaleTimeString(
-                                            "en-US",
-                                            {
-                                                hour: "numeric",
-                                                minute: "2-digit",
-                                                hour12: true,
-                                            }
+                                        const startTime = new Date(
+                                            segment.startTime
                                         );
-                                    };
+                                        const endTime = new Date(
+                                            segment.endTime
+                                        );
+                                        const duration =
+                                            (segment.endIndex -
+                                                segment.startIndex) /
+                                            SLOTS_PER_HOUR;
 
-                                    return (
-                                        <tr
-                                            key={idx}
-                                            className='border-b border-border/50 hover:bg-muted/20 transition-colors'
-                                        >
-                                            <td className='py-3 px-4 text-muted-foreground font-medium'>
-                                                {formatTime(startTime)} -{" "}
-                                                {formatTime(endTime)}
-                                                <span className='text-muted-foreground/70 ml-2'>
-                                                    ({duration.toFixed(1)}h)
-                                                </span>
-                                            </td>
-                                            <td className='py-3 px-4'>
-                                                <span
-                                                    className='inline-block px-3 py-1 rounded-md text-xs font-semibold'
-                                                    style={{
-                                                        backgroundColor:
-                                                            getStatusColor(
+                                        const formatTime = (
+                                            date: Date
+                                        ): string => {
+                                            return date.toLocaleTimeString(
+                                                "en-US",
+                                                {
+                                                    hour: "numeric",
+                                                    minute: "2-digit",
+                                                    hour12: true,
+                                                }
+                                            );
+                                        };
+
+                                        return (
+                                            <tr
+                                                key={idx}
+                                                className='border-b border-border/50 hover:bg-muted/20 transition-colors'
+                                            >
+                                                <td className='py-3 px-4 text-muted-foreground font-medium'>
+                                                    {formatTime(startTime)} -{" "}
+                                                    {formatTime(endTime)}
+                                                    <span className='text-muted-foreground/70 ml-2'>
+                                                        ({duration.toFixed(1)}h)
+                                                    </span>
+                                                </td>
+                                                <td className='py-3 px-4'>
+                                                    <span
+                                                        className='inline-block px-3 py-1 rounded-md text-xs font-semibold'
+                                                        style={{
+                                                            backgroundColor:
+                                                                getStatusColor(
+                                                                    segment.status
+                                                                ) + "20",
+                                                            color: getStatusColor(
                                                                 segment.status
-                                                            ) + "20",
-                                                        color: getStatusColor(
-                                                            segment.status
-                                                        ),
-                                                    }}
-                                                >
-                                                    {segment.status}
-                                                </span>
-                                            </td>
-                                            <td className='py-3 px-4 text-foreground'>
-                                                {segment.location || "-"}
-                                            </td>
-                                            <td className='py-3 px-4 text-foreground'>
-                                                {segment.remarks || "-"}
-                                            </td>
-                                        </tr>
-                                    );
-                                })}
+                                                            ),
+                                                        }}
+                                                    >
+                                                        {segment.status}
+                                                    </span>
+                                                </td>
+                                                <td className='py-3 px-4 text-foreground'>
+                                                    {segment.location || "-"}
+                                                </td>
+                                                <td className='py-3 px-4 text-foreground'>
+                                                    {segment.remarks || "-"}
+                                                </td>
+                                            </tr>
+                                        );
+                                    })}
                             </tbody>
                         </table>
                     </div>

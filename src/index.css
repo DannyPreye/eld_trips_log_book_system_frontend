@@ -83,6 +83,30 @@
   border: none !important;
 }
 
+/* Custom tooltip styles for colored stop tooltips */
+.leaflet-tooltip.custom-tooltip {
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 4px 8px !important;
+}
+
+.leaflet-tooltip-top.custom-tooltip::before {
+  border-top-color: inherit !important;
+}
+
+.leaflet-tooltip-bottom.custom-tooltip::before {
+  border-bottom-color: inherit !important;
+}
+
+.leaflet-tooltip-left.custom-tooltip::before {
+  border-left-color: inherit !important;
+}
+
+.leaflet-tooltip-right.custom-tooltip::before {
+  border-right-color: inherit !important;
+}
+
 /* Leaflet map container fixes */
 .leaflet-container {
   height: 100%;

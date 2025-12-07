@@ -4,6 +4,8 @@ import {
     TileLayer,
     Marker,
     Polyline,
+    Popup,
+    Tooltip,
     useMap,
 } from "react-leaflet";
 import L from "leaflet";
@@ -70,6 +72,45 @@ function getStopIcon(type: StopTypeEnum): L.DivIcon {
     });
 }
 
+function getStopCoordinates(
+    stop: Stop & { coordinates?: { lat: number; lng: number } }
+): [number, number] | null {
+    // First try coordinates object
+    if (
+        stop.coordinates?.lat !== undefined &&
+        stop.coordinates?.lng !== undefined
+    ) {
+        return [stop.coordinates.lat, stop.coordinates.lng];
+    }
+    // Fall back to parsing location string
+    if (stop.location) {
+        const match = stop.location.match(/(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/);
+        if (match) {
+            return [parseFloat(match[1]), parseFloat(match[2])];
+        }
+    }
+    return null;
+}
+
+const stopTypeLabels: Record<StopTypeEnum, string> = {
+    [StopTypeEnum.BREAK]: "Break",
+    [StopTypeEnum.FUEL]: "Fuel",
+    [StopTypeEnum.REST]: "Rest",
+    [StopTypeEnum.PICKUP]: "Pickup",
+    [StopTypeEnum.DROPOFF]: "Dropoff",
+};
+
+function formatTime(timeString: string): string {
+    const date = new Date(timeString);
+    return date.toLocaleString("en-US", {
+        month: "short",
+        day: "numeric",
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+    });
+}
+
 export default function MapDisplay({
     route,
     stops = [],
@@ -104,14 +145,9 @@ export default function MapDisplay({
         }
 
         stops.forEach((stop) => {
-            if (stop.location) {
-                // Parse location if it's a string with coordinates
-                const match = stop.location.match(
-                    /(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/
-                );
-                if (match) {
-                    points.push([parseFloat(match[1]), parseFloat(match[2])]);
-                }
+            const coords = getStopCoordinates(stop);
+            if (coords) {
+                points.push(coords);
             }
         });
 
@@ -180,14 +216,36 @@ export default function MapDisplay({
                     <Marker
                         position={[pickupLocation.lat, pickupLocation.lng]}
                         icon={getStopIcon(StopTypeEnum.PICKUP)}
-                    />
+                    >
+                        <Tooltip>
+                            <div className='font-semibold'>Pickup</div>
+                        </Tooltip>
+                        <Popup>
+                            <div className='min-w-[200px]'>
+                                <div className='font-semibold text-base mb-2'>
+                                    Pickup Location
+                                </div>
+                            </div>
+                        </Popup>
+                    </Marker>
                 )}
 
                 {dropoffLocation && (
                     <Marker
                         position={[dropoffLocation.lat, dropoffLocation.lng]}
                         icon={getStopIcon(StopTypeEnum.DROPOFF)}
-                    />
+                    >
+                        <Tooltip>
+                            <div className='font-semibold'>Dropoff</div>
+                        </Tooltip>
+                        <Popup>
+                            <div className='min-w-[200px]'>
+                                <div className='font-semibold text-base mb-2'>
+                                    Dropoff Location
+                                </div>
+                            </div>
+                        </Popup>
+                    </Marker>
                 )}
 
                 {polylinePositions.length > 0 && (
@@ -202,21 +260,49 @@ export default function MapDisplay({
                 )}
 
                 {stops.map((stop, index) => {
-                    if (!stop.location) return null;
-                    const match = stop.location.match(
-                        /(-?\d+\.?\d*),\s*(-?\d+\.?\d*)/
-                    );
-                    if (!match) return null;
-                    const [lat, lng] = [
-                        parseFloat(match[1]),
-                        parseFloat(match[2]),
-                    ];
+                    const coords = getStopCoordinates(stop);
+                    if (!coords) return null;
+                    const [lat, lng] = coords;
+                    const stopType = stop.stop_type;
                     return (
                         <Marker
                             key={`stop-${index}`}
                             position={[lat, lng]}
-                            icon={getStopIcon(stop.stop_type)}
-                        />
+                            icon={getStopIcon(stopType)}
+                        >
+                            <Tooltip className='bg-background'>
+                                <div className='font-semibold'>
+                                    {stopTypeLabels[stopType]}
+                                </div>
+                                {stop.location && (
+                                    <div className='text-xs text-primary'>
+                                        {stop.location}
+                                    </div>
+                                )}
+                            </Tooltip>
+                            <Popup>
+                                <div className='min-w-[200px]'>
+                                    <div className='font-semibold text-base mb-2'>
+                                        {stopTypeLabels[stopType]}
+                                    </div>
+                                    {stop.location && (
+                                        <div className='text-sm text-primary mb-1'>
+                                            <strong>Location:</strong>{" "}
+                                            {stop.location}
+                                        </div>
+                                    )}
+                                    <div className='text-sm text-primary mb-1'>
+                                        <strong>Time:</strong>{" "}
+                                        {formatTime(stop.time)}
+                                    </div>
+                                    {stop.remarks && (
+                                        <div className='text-sm text-muted-foreground mt-2 pt-2 border-t'>
+                                            {stop.remarks}
+                                        </div>
+                                    )}
+                                </div>
+                            </Popup>
+                        </Marker>
                     );
                 })}
             </MapContainer>
