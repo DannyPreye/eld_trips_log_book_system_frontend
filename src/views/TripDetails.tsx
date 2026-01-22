@@ -13,7 +13,6 @@ import {
     Map as MapIcon,
     FileText,
     Navigation,
-    MapPin,
     AlertCircle
 } from "lucide-react";
 import {
@@ -26,7 +25,6 @@ import {
     getTotalDrivingHours,
     getTotalOnDutyHours
 } from "@/lib/tripHelpers";
-import { fadeInUp, staggerContainer } from "@/lib/animations";
 
 export default function TripDetails() {
     const { id } = useParams<{ id: string }>();
