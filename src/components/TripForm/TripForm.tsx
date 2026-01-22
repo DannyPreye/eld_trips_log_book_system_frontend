@@ -11,6 +11,8 @@ import {
 } from "@/components/ui/card";
 import { useGeocoding } from "@/hooks/useGeocoding";
 import type { TripInputRequest } from "@/lib/api";
+import { motion, AnimatePresence } from "framer-motion";
+import { MapPin, Navigation, Flag, Clock, Loader2, Sparkles } from "lucide-react";
 
 interface LocationInput {
     address: string;
@@ -97,17 +99,22 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
     };
 
     return (
-        <Card className='border border-border'>
-            <CardHeader>
-                <CardTitle>Plan Trip</CardTitle>
-                <CardDescription>
-                    Enter trip details to generate route and ELD logs
+        <Card className='border-none bg-transparent shadow-none'>
+            <CardHeader className="pb-4">
+                <CardTitle className="text-2xl font-bold flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-blue-500" />
+                    Trip Details
+                </CardTitle>
+                <CardDescription className="text-sm font-medium opacity-70">
+                    Define your route and HOS status
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <form onSubmit={handleSubmit} className='space-y-4'>
-                    <div className='space-y-2'>
-                        <Label htmlFor='current-location'>
+                <form onSubmit={handleSubmit} className='space-y-6'>
+                    {/* Current Location */}
+                    <div className='group space-y-2 relative'>
+                        <Label htmlFor='current-location' className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground group-focus-within:text-primary transition-colors">
+                            <Navigation className="w-3 h-3" />
                             Current Location
                         </Label>
                         <div className='relative'>
@@ -117,40 +124,43 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
                                 onChange={(e) => {
                                     const value = e.target.value;
                                     setCurrentLocation({ address: value });
-                                    handleLocationSearch(
-                                        value,
-                                        setCurrentSuggestions
-                                    );
+                                    handleLocationSearch(value, setCurrentSuggestions);
                                 }}
-                                placeholder='Enter address or coordinates'
+                                className="pl-10 h-12 bg-background/50 border-border/50 focus:bg-background focus:ring-primary/20 transition-all rounded-xl"
+                                placeholder='Where are you now?'
                                 disabled={isLoading}
                             />
-                            {currentSuggestions.length > 0 && (
-                                <div className='absolute z-10 w-full mt-1 bg-white border border-border rounded-md shadow-sm'>
-                                    {currentSuggestions.map(
-                                        (suggestion, idx) => (
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+
+                            <AnimatePresence>
+                                {currentSuggestions.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 5 }}
+                                        className='absolute z-[1001] w-full mt-2 glass rounded-2xl shadow-2xl border-white/20 dark:border-white/5 overflow-hidden'
+                                    >
+                                        {currentSuggestions.map((suggestion, idx) => (
                                             <div
                                                 key={idx}
-                                                className='px-3 py-2 cursor-pointer hover:bg-muted text-sm'
-                                                onClick={() =>
-                                                    handleLocationSelect(
-                                                        suggestion,
-                                                        setCurrentLocation,
-                                                        setCurrentSuggestions
-                                                    )
-                                                }
+                                                className='px-4 py-3 cursor-pointer hover:bg-primary/10 text-sm transition-colors border-b border-white/10 last:border-0'
+                                                onClick={() => handleLocationSelect(suggestion, setCurrentLocation, setCurrentSuggestions)}
                                             >
                                                 {suggestion.display_name}
                                             </div>
-                                        )
-                                    )}
-                                </div>
-                            )}
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
-                    <div className='space-y-2'>
-                        <Label htmlFor='pickup-location'>Pickup Location</Label>
+                    {/* Pickup Location */}
+                    <div className='group space-y-2 relative'>
+                        <Label htmlFor='pickup-location' className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground group-focus-within:text-primary transition-colors">
+                            <Flag className="w-3 h-3" />
+                            Pickup Location
+                        </Label>
                         <div className='relative'>
                             <Input
                                 id='pickup-location'
@@ -158,40 +168,41 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
                                 onChange={(e) => {
                                     const value = e.target.value;
                                     setPickupLocation({ address: value });
-                                    handleLocationSearch(
-                                        value,
-                                        setPickupSuggestions
-                                    );
+                                    handleLocationSearch(value, setPickupSuggestions);
                                 }}
-                                placeholder='Enter address or coordinates'
+                                className="pl-10 h-12 bg-background/50 border-border/50 focus:bg-background focus:ring-primary/20 transition-all rounded-xl"
+                                placeholder='Where is the load?'
                                 disabled={isLoading}
                             />
-                            {pickupSuggestions.length > 0 && (
-                                <div className='absolute z-10 w-full mt-1 bg-white border border-border rounded-md shadow-sm'>
-                                    {pickupSuggestions.map(
-                                        (suggestion, idx) => (
+                            <Flag className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+
+                            <AnimatePresence>
+                                {pickupSuggestions.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 5 }}
+                                        className='absolute z-[1001] w-full mt-2 glass rounded-2xl shadow-2xl border-white/20 dark:border-white/5 overflow-hidden'
+                                    >
+                                        {pickupSuggestions.map((suggestion, idx) => (
                                             <div
                                                 key={idx}
-                                                className='px-3 py-2 cursor-pointer hover:bg-muted text-sm'
-                                                onClick={() =>
-                                                    handleLocationSelect(
-                                                        suggestion,
-                                                        setPickupLocation,
-                                                        setPickupSuggestions
-                                                    )
-                                                }
+                                                className='px-4 py-3 cursor-pointer hover:bg-primary/10 text-sm transition-colors border-b border-white/10 last:border-0'
+                                                onClick={() => handleLocationSelect(suggestion, setPickupLocation, setPickupSuggestions)}
                                             >
                                                 {suggestion.display_name}
                                             </div>
-                                        )
-                                    )}
-                                </div>
-                            )}
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
-                    <div className='space-y-2'>
-                        <Label htmlFor='dropoff-location'>
+                    {/* Dropoff Location */}
+                    <div className='group space-y-2 relative'>
+                        <Label htmlFor='dropoff-location' className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground group-focus-within:text-primary transition-colors">
+                            <MapPin className="w-3 h-3" />
                             Dropoff Location
                         </Label>
                         <div className='relative'>
@@ -201,70 +212,91 @@ export default function TripForm({ onSubmit, isLoading }: TripFormProps) {
                                 onChange={(e) => {
                                     const value = e.target.value;
                                     setDropoffLocation({ address: value });
-                                    handleLocationSearch(
-                                        value,
-                                        setDropoffSuggestions
-                                    );
+                                    handleLocationSearch(value, setDropoffSuggestions);
                                 }}
-                                placeholder='Enter address or coordinates'
+                                className="pl-10 h-12 bg-background/50 border-border/50 focus:bg-background focus:ring-primary/20 transition-all rounded-xl"
+                                placeholder='Destination address'
                                 disabled={isLoading}
                             />
-                            {dropoffSuggestions.length > 0 && (
-                                <div className='absolute z-10 w-full mt-1 bg-white border border-border rounded-md shadow-sm'>
-                                    {dropoffSuggestions.map(
-                                        (suggestion, idx) => (
+                            <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground group-focus-within:text-primary transition-colors" />
+
+                            <AnimatePresence>
+                                {dropoffSuggestions.length > 0 && (
+                                    <motion.div
+                                        initial={{ opacity: 0, y: 5 }}
+                                        animate={{ opacity: 1, y: 0 }}
+                                        exit={{ opacity: 0, y: 5 }}
+                                        className='absolute z-[1001] w-full mt-2 glass rounded-2xl shadow-2xl border-white/20 dark:border-white/5 overflow-hidden'
+                                    >
+                                        {dropoffSuggestions.map((suggestion, idx) => (
                                             <div
                                                 key={idx}
-                                                className='px-3 py-2 cursor-pointer hover:bg-muted text-sm'
-                                                onClick={() =>
-                                                    handleLocationSelect(
-                                                        suggestion,
-                                                        setDropoffLocation,
-                                                        setDropoffSuggestions
-                                                    )
-                                                }
+                                                className='px-4 py-3 cursor-pointer hover:bg-primary/10 text-sm transition-colors border-b border-white/10 last:border-0'
+                                                onClick={() => handleLocationSelect(suggestion, setDropoffLocation, setDropoffSuggestions)}
                                             >
                                                 {suggestion.display_name}
                                             </div>
-                                        )
-                                    )}
-                                </div>
-                            )}
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
-                    <div className='space-y-2'>
-                        <Label htmlFor='cycle-hours'>
+                    <div className='group space-y-2'>
+                        <Label htmlFor='cycle-hours' className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-muted-foreground group-focus-within:text-primary transition-colors">
+                            <Clock className="w-3 h-3" />
                             Current Cycle Hours Used
                         </Label>
-                        <Input
-                            id='cycle-hours'
-                            type='number'
-                            min='0'
-                            max='70'
-                            step='0.1'
-                            value={currentCycleHours}
-                            onChange={(e) =>
-                                setCurrentCycleHours(e.target.value)
-                            }
-                            placeholder='0.0'
-                            disabled={isLoading}
-                        />
+                        <div className="relative">
+                            <Input
+                                id='cycle-hours'
+                                type='number'
+                                min='0'
+                                max='70'
+                                step='0.1'
+                                value={currentCycleHours}
+                                onChange={(e) => setCurrentCycleHours(e.target.value)}
+                                className="h-12 bg-background/50 border-border/50 focus:bg-background rounded-xl pl-4"
+                                placeholder='0.0'
+                                disabled={isLoading}
+                            />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground bg-muted px-2 py-1 rounded-lg">
+                                / 70h
+                            </div>
+                        </div>
                     </div>
 
-                    <Button
-                        type='submit'
-                        className='w-full'
-                        disabled={
-                            isLoading ||
-                            isGeocoding ||
-                            !currentLocation.lat ||
-                            !pickupLocation.lat ||
-                            !dropoffLocation.lat
-                        }
+                    <motion.div
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
                     >
-                        {isLoading ? "Planning Trip..." : "Plan Trip"}
-                    </Button>
+                        <Button
+                            type='submit'
+                            className='w-full h-14 rounded-2xl text-lg font-bold bg-blue-600 hover:bg-blue-700 text-white shadow-xl shadow-blue-500/20 shimmer group relative overflow-hidden'
+                            disabled={
+                                isLoading ||
+                                isGeocoding ||
+                                !currentLocation.lat ||
+                                !pickupLocation.lat ||
+                                !dropoffLocation.lat
+                            }
+                        >
+                            <span className="relative z-10 flex items-center justify-center gap-2">
+                                {isLoading ? (
+                                    <>
+                                        <Loader2 className="w-5 h-5 animate-spin" />
+                                        Optimizing Route...
+                                    </>
+                                ) : (
+                                    <>
+                                        Calculate Smart Route
+                                        <Navigation className="w-5 h-5 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
+                                    </>
+                                )}
+                            </span>
+                        </Button>
+                    </motion.div>
                 </form>
             </CardContent>
         </Card>

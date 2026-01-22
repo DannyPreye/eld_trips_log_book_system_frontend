@@ -2,13 +2,12 @@ import { useState, useMemo } from "react";
 import { useParams, Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import LogGraphAnimated from "@/components/LogGraphAnimated/LogGraphAnimated";
-import AnimatedStatsCard from "@/components/AnimatedStatsCard/AnimatedStatsCard";
 import ProgressRing from "@/components/ProgressRing/ProgressRing";
 import DayNavigator from "@/components/DayNavigator/DayNavigator";
 import AchievementBadge from "@/components/AchievementBadge/AchievementBadge";
 import CelebrationEffect from "@/components/CelebrationEffect/CelebrationEffect";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { useTripLogs } from "@/hooks/useTripDetails";
 import { ArrowLeft, Clock, TrendingUp, Award } from "lucide-react";
 import { getLogDrivingHours, getLogOnDutyHours } from "@/lib/tripHelpers";
@@ -74,7 +73,6 @@ export default function LogView() {
     const drivingProgress = (drivingHours / maxDrivingHours) * 100;
     const onDutyProgress = (onDutyHours / maxOnDutyHours) * 100;
 
-    console.log(currentLog);
 
     // Calculate achievements
     const achievements = useMemo(() => {
@@ -107,46 +105,34 @@ export default function LogView() {
                     variants={staggerContainer}
                     className='space-y-8'
                 >
-                    {/* Header */}
-                    <motion.div variants={fadeInUp}>
-                        <Link
-                            to={`/trip/${tripId}`}
-                            className='inline-flex items-center text-sm text-muted-foreground hover:text-foreground mb-4'
-                        >
-                            <ArrowLeft className='w-4 h-4 mr-1' />
-                            Back to Trip Details
-                        </Link>
-                        <div className='flex items-center justify-between mb-6'>
-                            <div>
-                                <h1 className='text-4xl font-bold text-foreground mb-2'>
-                                    ELD Log Graph
-                                </h1>
-                                <p className='text-muted-foreground'>
-                                    Trip ID: {tripId}
+                    {/* Header - More Professional/Industrial */}
+                    <motion.div variants={fadeInUp} className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-border pb-6">
+                        <div>
+                            <Link
+                                to={`/trip/${tripId}`}
+                                className='inline-flex items-center text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-colors mb-4 group'
+                            >
+                                <ArrowLeft className='w-3 h-3 mr-2 group-hover:-translate-x-1 transition-transform' />
+                                Master Trip Control
+                            </Link>
+                            <h1 className='text-4xl font-black tracking-tight text-foreground uppercase'>
+                                HOS <span className="text-primary">Electronic</span> Logbook
+                            </h1>
+                            <div className="flex items-center gap-4 mt-2">
+                                <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
+                                    Fleet Asset: TRP-{tripId}
+                                </p>
+                                <div className="h-1 w-1 rounded-full bg-muted-foreground/30" />
+                                <p className='text-[10px] font-black text-muted-foreground uppercase tracking-widest'>
+                                    Electronic Record of Duty Status (eRODS)
                                 </p>
                             </div>
-                            <div className='flex flex-wrap gap-2'>
-                                <AchievementBadge
-                                    type='perfect'
-                                    earned={achievements.perfect}
-                                    delay={0.1}
-                                />
-                                <AchievementBadge
-                                    type='compliant'
-                                    earned={achievements.compliant}
-                                    delay={0.2}
-                                />
-                                <AchievementBadge
-                                    type='efficient'
-                                    earned={achievements.efficient}
-                                    delay={0.3}
-                                />
-                                <AchievementBadge
-                                    type='complete'
-                                    earned={achievements.complete}
-                                    delay={0.4}
-                                />
-                            </div>
+                        </div>
+                        <div className='flex flex-wrap gap-2'>
+                            <AchievementBadge type='perfect' earned={achievements.perfect} delay={0.1} />
+                            <AchievementBadge type='compliant' earned={achievements.compliant} delay={0.2} />
+                            <AchievementBadge type='efficient' earned={achievements.efficient} delay={0.3} />
+                            <AchievementBadge type='complete' earned={achievements.complete} delay={0.4} />
                         </div>
                     </motion.div>
 
@@ -191,167 +177,118 @@ export default function LogView() {
                         </Card>
                     </motion.div>
 
-                    {/* Day Navigator */}
-                    <motion.div variants={fadeInUp}>
-                        <DayNavigator
-                            currentIndex={currentDayIndex}
-                            totalDays={totalDays}
-                            date={currentLog.date}
-                            onPrevious={handlePreviousDay}
-                            onNext={handleNextDay}
-                        />
-                    </motion.div>
-
-                    {/* Main Content Grid */}
-                    <div className='grid grid-cols-1 lg:grid-cols-4 gap-6'>
-                        {/* Log Graph */}
-                        <motion.div
-                            className='col-span-1 lg:col-span-3 h-full'
-                            variants={fadeInUp}
-                            transition={{ delay: 0.2 }}
-                        >
-                            <LogGraphAnimated
-                                log={currentLog}
-                                width={2000}
-                                animationKey={`log-${currentDayIndex}`}
-                            />
-                        </motion.div>
-
-                        {/* Stats Sidebar */}
+                    {/* Main Content Layout - Switched to a vertical stack or wider grid */}
+                    <div className='space-y-8'>
+                        {/* Summary Metrics Row */}
                         <motion.div
                             variants={fadeInUp}
-                            transition={{ delay: 0.3 }}
-                            className='space-y-6'
+                            className="grid grid-cols-1 md:grid-cols-4 gap-4"
                         >
-                            {/* Progress Rings */}
-                            <Card className='border border-border'>
-                                <CardHeader>
-                                    <CardTitle className='flex items-center gap-2'>
-                                        <TrendingUp className='w-5 h-5' />
-                                        Compliance Status
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <div className='grid grid-cols-2 gap-6'>
-                                        <div className='flex flex-col items-center'>
-                                            <ProgressRing
-                                                progress={Math.min(
-                                                    drivingProgress,
-                                                    100
-                                                )}
-                                                size={100}
-                                                strokeWidth={8}
-                                                color='hsl(var(--status-driving))'
-                                                label='Driving'
-                                                delay={0.4}
-                                            />
-                                            <div className='mt-3 text-center'>
-                                                <div className='text-lg font-bold'>
-                                                    {drivingHours.toFixed(1)}
-                                                </div>
-                                                <div className='text-xs text-muted-foreground'>
-                                                    of {maxDrivingHours} hrs
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className='flex flex-col items-center'>
-                                            <ProgressRing
-                                                progress={Math.min(
-                                                    onDutyProgress,
-                                                    100
-                                                )}
-                                                size={100}
-                                                strokeWidth={8}
-                                                color='hsl(var(--status-on-duty))'
-                                                label='On-Duty'
-                                                delay={0.5}
-                                            />
-                                            <div className='mt-3 text-center'>
-                                                <div className='text-lg font-bold'>
-                                                    {onDutyHours.toFixed(1)}
-                                                </div>
-                                                <div className='text-xs text-muted-foreground'>
-                                                    of {maxOnDutyHours} hrs
-                                                </div>
-                                            </div>
-                                        </div>
+                            <Card className='glass border-white/10 bg-background/40'>
+                                <CardContent className='p-4 flex items-center gap-4'>
+                                    <div className="p-2.5 bg-blue-500/10 rounded-xl">
+                                        <Clock className="w-5 h-5 text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Driving</p>
+                                        <p className="text-xl font-black">{drivingHours.toFixed(1)} <span className="text-[10px] opacity-40">hrs</span></p>
                                     </div>
                                 </CardContent>
                             </Card>
-
-                            {/* Stats Cards */}
-                            <div className='grid grid-cols-1 gap-4'>
-                                <AnimatedStatsCard
-                                    label='Driving Hours'
-                                    value={drivingHours}
-                                    unit='hrs'
-                                    icon={Clock}
-                                    color='blue'
-                                    delay={0.6}
-                                />
-                                <AnimatedStatsCard
-                                    label='On-Duty Hours'
-                                    value={onDutyHours}
-                                    unit='hrs'
-                                    icon={Award}
-                                    color='green'
-                                    delay={0.7}
+                            <Card className='glass border-white/10 bg-background/40'>
+                                <CardContent className='p-4 flex items-center gap-4'>
+                                    <div className="p-2.5 bg-amber-500/10 rounded-xl">
+                                        <TrendingUp className="w-5 h-5 text-amber-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">On-Duty</p>
+                                        <p className="text-xl font-black">{onDutyHours.toFixed(1)} <span className="text-[10px] opacity-40">hrs</span></p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <Card className='glass border-white/10 bg-background/40'>
+                                <CardContent className='p-4 flex items-center gap-4'>
+                                    <div className="p-2.5 bg-purple-500/10 rounded-xl">
+                                        <Award className="w-5 h-5 text-purple-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">Compliance</p>
+                                        <p className="text-xl font-black">{achievements.compliant ? "PASS" : "FAIL"}</p>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                            <div className="flex bg-muted/20 rounded-xl p-1 items-center">
+                                <DayNavigator
+                                    currentIndex={currentDayIndex}
+                                    totalDays={totalDays}
+                                    date={currentLog.date}
+                                    onPrevious={handlePreviousDay}
+                                    onNext={handleNextDay}
                                 />
                             </div>
+                        </motion.div>
 
-                            {/* Segments Info */}
+                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+                            {/* Log Graph - Takes most width */}
+                            <motion.div
+                                className='lg:col-span-9 space-y-8'
+                                variants={fadeInUp}
+                                transition={{ delay: 0.2 }}
+                            >
+                                <div className="glass rounded-[2rem] overflow-hidden border-white/10 shadow-2xl p-0">
+                                    <LogGraphAnimated
+                                        log={currentLog}
+                                        width={2400} // Even wider for better resolution
+                                        animationKey={`log-${currentDayIndex}`}
+                                    />
+                                </div>
+                            </motion.div>
+
+                            {/* Sidebar - Compact for HOS stats */}
                             <motion.div
                                 variants={fadeInUp}
-                                transition={{ delay: 0.8 }}
+                                transition={{ delay: 0.3 }}
+                                className='lg:col-span-3 space-y-6'
                             >
-                                <Card className='border border-border'>
-                                    <CardHeader>
-                                        <CardTitle className='text-sm flex items-center gap-2'>
-                                            <Award className='w-4 h-4' />
-                                            Log Segments
-                                        </CardTitle>
-                                    </CardHeader>
-                                    <CardContent>
-                                        <div className='space-y-3'>
-                                            <motion.div
-                                                className='flex justify-between text-sm'
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 0.9 }}
-                                            >
-                                                <span className='text-muted-foreground'>
-                                                    Total Segments
-                                                </span>
-                                                <span className='font-semibold'>
-                                                    {currentLog.segments.length}
-                                                </span>
-                                            </motion.div>
-                                            <motion.div
-                                                className='flex justify-between text-sm'
-                                                initial={{ opacity: 0, x: -10 }}
-                                                animate={{ opacity: 1, x: 0 }}
-                                                transition={{ delay: 1.0 }}
-                                            >
-                                                <span className='text-muted-foreground'>
-                                                    Status Changes
-                                                </span>
-                                                <span className='font-semibold'>
-                                                    {
-                                                        currentLog.segments.filter(
-                                                            (s, i, arr) =>
-                                                                i === 0 ||
-                                                                s.status !==
-                                                                    arr[i - 1]
-                                                                        .status
-                                                        ).length
-                                                    }
-                                                </span>
-                                            </motion.div>
+                                <Card className='glass border-white/10 shadow-xl overflow-hidden'>
+                                    <div className="bg-primary/5 px-5 py-3 border-b border-white/5">
+                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">Duty Utilization</h3>
+                                    </div>
+                                    <CardContent className="pt-6">
+                                        <div className='space-y-8'>
+                                            <div className='flex flex-col items-center'>
+                                                <ProgressRing
+                                                    progress={Math.min(drivingProgress, 100)}
+                                                    size={140}
+                                                    strokeWidth={10}
+                                                    color='hsl(var(--status-driving))'
+                                                    label='Drive Time'
+                                                    delay={0.4}
+                                                />
+                                                <div className='mt-4 text-center'>
+                                                    <div className='text-xs font-black uppercase tracking-widest text-muted-foreground mb-1'>Driving Limit</div>
+                                                    <div className='text-2xl font-black'>{drivingHours.toFixed(1)} / {maxDrivingHours}h</div>
+                                                </div>
+                                            </div>
+                                            <div className='flex flex-col items-center'>
+                                                <ProgressRing
+                                                    progress={Math.min(onDutyProgress, 100)}
+                                                    size={140}
+                                                    strokeWidth={10}
+                                                    color='hsl(var(--status-on-duty))'
+                                                    label='On-Duty'
+                                                    delay={0.5}
+                                                />
+                                                <div className='mt-4 text-center'>
+                                                    <div className='text-xs font-black uppercase tracking-widest text-muted-foreground mb-1'>On-Duty Limit</div>
+                                                    <div className='text-2xl font-black'>{onDutyHours.toFixed(1)} / {maxOnDutyHours}h</div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </CardContent>
                                 </Card>
                             </motion.div>
-                        </motion.div>
+                        </div>
                     </div>
                 </motion.div>
             </div>

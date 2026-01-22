@@ -193,8 +193,11 @@ export default function LogGraph({
     }, [slotWidth]);
 
     return (
-        <div className='w-full overflow-x-auto border border-border bg-white rounded-lg'>
-            <svg width={width} height={height} className='block'>
+        <div className='w-full space-y-8'>
+            {/* Graph Drawing Area with independent scroll */}
+            <div className='w-full overflow-x-auto custom-scrollbar border border-border bg-white rounded-xl shadow-sm'>
+                <div style={{ minWidth: width }}>
+                    <svg width={width} height={height} className='block'>
                 {/* Graph Area */}
                 <g>
                     {/* Time labels */}
@@ -422,32 +425,30 @@ export default function LogGraph({
                     </text>
                 </g>
             </svg>
+            </div>
+        </div>
 
-            {/* Remarks Table */}
-            {normalizedSegments.some((s) => s.remarks || s.location) && (
-                <div className='mt-6 border-t-2 border-border pt-6'>
-                    <h3 className='text-base font-semibold text-foreground mb-4'>
-                        Activity Log & Remarks
+        {/* Remarks Table - Full Width / Separate Scroll */}
+        {normalizedSegments.some((s) => s.remarks || s.location) && (
+            <div className='bg-white border border-border rounded-xl shadow-sm overflow-hidden'>
+                <div className="bg-muted/30 px-6 py-4 border-b border-border flex items-center justify-between">
+                    <h3 className='text-sm font-black uppercase tracking-widest text-foreground flex items-center gap-2'>
+                        <div className="w-1 h-4 bg-primary rounded-full" />
+                        Activity Record / Remarks
                     </h3>
-                    <div className='overflow-x-auto'>
-                        <table className='w-full text-sm border-collapse'>
-                            <thead>
-                                <tr className='border-b-2 border-border bg-muted/30'>
-                                    <th className='text-left py-3 px-4 font-semibold text-foreground'>
-                                        Time
-                                    </th>
-                                    <th className='text-left py-3 px-4 font-semibold text-foreground'>
-                                        Status
-                                    </th>
-                                    <th className='text-left py-3 px-4 font-semibold text-foreground'>
-                                        Location
-                                    </th>
-                                    <th className='text-left py-3 px-4 font-semibold text-foreground'>
-                                        Remarks
-                                    </th>
-                                </tr>
-                            </thead>
-                            <tbody>
+                    <span className="text-[10px] font-bold text-muted-foreground uppercase opacity-60">FMCSA Part 395 Compliance</span>
+                </div>
+                <div className='overflow-x-auto'>
+                    <table className='w-full text-xs border-collapse'>
+                        <thead>
+                            <tr className='bg-muted/10 border-b border-border'>
+                                <th className='text-left py-4 px-6 font-black uppercase tracking-tighter text-muted-foreground'>Time Range</th>
+                                <th className='text-left py-4 px-6 font-black uppercase tracking-tighter text-muted-foreground'>HOS Status</th>
+                                <th className='text-left py-4 px-6 font-black uppercase tracking-tighter text-muted-foreground'>Location / City, ST</th>
+                                <th className='text-left py-4 px-6 font-black uppercase tracking-tighter text-muted-foreground'>Activity Description / Remarks</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-border/40">
                                 {normalizedSegments
                                     .sort((a, b) => a.startIndex - b.startIndex)
                                     .map((segment, idx) => {
@@ -475,50 +476,51 @@ export default function LogGraph({
                                             );
                                         };
 
-                                        return (
-                                            <tr
-                                                key={idx}
-                                                className='border-b border-border/50 hover:bg-muted/20 transition-colors'
-                                            >
-                                                <td className='py-3 px-4 text-muted-foreground font-medium'>
-                                                    {formatTime(startTime)} -{" "}
-                                                    {formatTime(endTime)}
-                                                    <span className='text-muted-foreground/70 ml-2'>
-                                                        ({duration.toFixed(1)}h)
-                                                    </span>
-                                                </td>
-                                                <td className='py-3 px-4'>
-                                                    <span
-                                                        className='inline-block px-3 py-1 rounded-md text-xs font-semibold'
-                                                        style={{
-                                                            backgroundColor:
-                                                                getStatusColor(
-                                                                    segment.status
-                                                                ) + "20",
-                                                            color: getStatusColor(
-                                                                segment.status
-                                                            ),
-                                                        }}
-                                                    >
-                                                        {segment.status}
-                                                    </span>
-                                                </td>
-                                                <td className='py-3 px-4 text-foreground'>
-                                                    {segment.location || "-"}
-                                                </td>
-                                                <td className='py-3 px-4 text-foreground'>
-                                                    {segment.remarks || "-"}
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                            </tbody>
-                        </table>
-                    </div>
+                                    return (
+                                        <tr
+                                            key={idx}
+                                            className='hover:bg-muted/10 transition-colors group'
+                                        >
+                                            <td className='py-4 px-6 text-foreground font-bold whitespace-nowrap'>
+                                                {formatTime(startTime)} <span className="text-muted-foreground font-normal mx-1">→</span> {formatTime(endTime)}
+                                                <span className='ml-3 text-[10px] font-black text-primary/40 bg-primary/5 px-2 py-0.5 rounded-full'>
+                                                    {duration.toFixed(1)} hrs
+                                                </span>
+                                            </td>
+                                            <td className='py-4 px-6'>
+                                                <span
+                                                    className='inline-flex items-center px-2.5 py-1 rounded-md text-[10px] font-black uppercase tracking-tight'
+                                                    style={{
+                                                        backgroundColor: getStatusColor(segment.status) + "15",
+                                                        color: getStatusColor(segment.status),
+                                                        border: `1px solid ${getStatusColor(segment.status)}30`
+                                                    }}
+                                                >
+                                                    <div className="w-1.5 h-1.5 rounded-full mr-1.5" style={{ backgroundColor: getStatusColor(segment.status) }} />
+                                                    {segment.status}
+                                                </span>
+                                            </td>
+                                            <td className='py-4 px-6 text-foreground/80 font-medium'>
+                                                {segment.location || "-"}
+                                            </td>
+                                            <td className='py-4 px-6 text-foreground font-medium'>
+                                                <div className="flex flex-col">
+                                                    <span>{segment.remarks || "-"}</span>
+                                                    {!segment.remarks && (
+                                                        <span className="text-[10px] text-muted-foreground italic font-normal uppercase opacity-40">No additional remarks</span>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    );
+                                })}
+                        </tbody>
+                    </table>
                 </div>
-            )}
-        </div>
-    );
+            </div>
+        )}
+    </div>
+);
 }
 
 function getStatusColor(status: string): string {
